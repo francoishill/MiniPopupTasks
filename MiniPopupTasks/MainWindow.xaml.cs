@@ -53,6 +53,155 @@ namespace WpfApplication1
 			InitializeComponent();
 		}
 
+		private void Window_Loaded(object sender, RoutedEventArgs e)
+		{
+			//mainGrid.Width = 150;//SystemParameters.WorkArea.Width;
+			//mainGrid.Height = 200;//SystemParameters.WorkArea.Height;
+			this.UpdateLayout();
+			this.Left = SystemParameters.WorkArea.Right - this.ActualWidth;
+			this.Top = SystemParameters.WorkArea.Bottom - this.ActualHeight;
+			//ApplyScale(miniScale);
+			//mainGrid.RenderTransformOrigin = new Point(1, 1);
+
+			this.HideThisWindow();
+			//Timer timer = new Timer(500) { Enabled = true, AutoReset = true };
+			//timer.Elapsed += (sn, ev) =>
+			//{
+			//    this.Dispatcher.BeginInvoke((Action)delegate { ShowThisWindow(); });
+			//};
+			//timer.Start();
+			this.FocusVisualStyle = null;
+
+			var hook = new UserActivityHook(true, true);
+			hook.KeyDown += (sn, ev) =>
+			{
+				//if (ev.KeyCode != System.Windows.Forms.Keys.Z
+				//    && ev.KeyCode != System.Windows.Forms.Keys.LWin
+				//    && ev.KeyCode != System.Windows.Forms.Keys.RWin)
+				lastInputKeyboardNotMouse = true;
+			};
+			hook.OnMouseActivity += (sn, ev) =>
+			{
+				if (ev.Button.Button == System.Windows.Forms.MouseButtons.Left
+					|| ev.Button.Button == System.Windows.Forms.MouseButtons.Middle
+					|| ev.Button.Button == System.Windows.Forms.MouseButtons.Right)
+					if (!listboxItems.IsMouseOver && DateTime.Now.Subtract(lastShowTime) > minimumShowTimeBeforeHiding)
+						HideThisWindow();
+
+				lastInputKeyboardNotMouse = false;
+				if (ev.Button.Button == System.Windows.Forms.MouseButtons.Middle
+					&& ev.Button.ButtonState == UserActivityHook.MoreMouseButton.MoreButtonStates.DoubleClicked)//&& ev.Clicks == 2)
+				{
+					System.Threading.Thread.Sleep(200);
+					ShowThisWindow();
+				}
+				//if (ev.Button != null && ev.Button.Button == System.Windows.Forms.MouseButtons.Middle && ev.Button.ButtonState == UserActivityHook.MoreMouseButton.MoreButtonStates.Up)
+				//// && ev.Button.ButtonState == UserActivityHook.MoreMouseButton.MoreButtonStates.DoubleClicked)
+				//{
+				//    skipCheckActiveTimerCount = 2;
+				//    ShowThisWindow();
+				//}
+				/*if (ev.Button != null && ev.Button.Button == System.Windows.Forms.MouseButtons.Left)
+				{
+					if (ev.Button.ButtonState == UserActivityHook.MoreMouseButton.MoreButtonStates.Down)
+						isMouseLeftDown = true;
+					else
+						isMouseLeftDown = false;
+				}
+				if (isMouseLeftDown && ev.Button.Button == System.Windows.Forms.MouseButtons.Middle && ev.Button.ButtonState == UserActivityHook.MoreMouseButton.MoreButtonStates.Up)
+				{
+					//skipCheckActiveTimerCount = 2;
+					System.Threading.Thread.Sleep(200);
+					ShowThisWindow();
+				}*/
+			};
+
+			if (!File.Exists(PastingListFilepath))
+			{
+				currentList.Add(new MyMenuItem("Click to define pasting items", "Click to define pasting items", delegate
+				{
+					File.WriteAllText(PastingListFilepath,
+						"Place items here to populate in the 'pasting-list', examples:"
+						+ Environment.NewLine + "Display text|The text to be pasted (note the pipe character)"
+						+ Environment.NewLine + "This text will be displayed & pasted (note there is no pipe character)");
+					Process.Start("notepad", PastingListFilepath).WaitForExit();
+					PopulatePastinglistAndBatchcommandsFromFile();
+				}));
+			}
+			else
+				PopulatePastinglistAndBatchcommandsFromFile();
+			//currentList.Add(new MyMenuItem("Hallo, hover me", "This is the full text for 'Hallo, hover me'"));
+			//currentList.Add(new MyMenuItem("Item2", "Full text for 'Item2'"));
+			//currentList.Add(new MyMenuItem("Item3", "Full text for 'Item3'"));
+			//currentList.Add(new MyMenuItem("Item4", "Full text for 'Item4'"));
+
+			listboxItems.ItemsSource = currentList;
+			if (currentList.Count > 0) SetNewSelectedItem(currentList[0]);
+
+			//Now checks if mouse over listbox on mouse clicks, if not hides the window
+			//Timer timerCheckIfForegroundWindow = new Timer(200) { AutoReset = true, Enabled = true };
+			//timerCheckIfForegroundWindow.Elapsed += delegate
+			//{
+			//    Dispatcher.Invoke((Action)delegate
+			//    {
+			//        if (this.IsVisible)
+			//        {
+			//            /*if (skipCheckActiveTimerCount > 0)
+			//            {
+			//                this.Activate();
+			//                skipCheckActiveTimerCount--;
+			//            }
+			//            else
+			//            {*/
+			//            if (GetForegroundWindow() != this.Handle)
+			//                if (DateTime.Now.Subtract(lastShowTime) > minimumShowTimeBeforeHiding)
+			//                    HideThisWindow();
+			//                else
+			//                {
+			//                    this.Activate();
+			//                    SetForegroundWindow(this.Handle);
+			//                }
+			//            //}
+			//        }
+			//    });
+			//};
+			//timerCheckIfForegroundWindow.Start();
+		}
+
+		TimeSpan minimumShowTimeBeforeHiding = TimeSpan.FromMilliseconds(200);
+		DateTime lastShowTime = DateTime.Now;
+		private void ShowThisWindow()
+		{
+			var caretPos = GetPositionToPlaceWindow();
+			//Console.WriteLine("Caret: " + caretPos.ToString());
+			if (caretPos.x > 0 || caretPos.y > 0)
+			{
+				this.Left = caretPos.x;
+				this.Top = caretPos.y;
+			}
+			else
+			{
+				this.Left = SystemParameters.WorkArea.Left + (SystemParameters.WorkArea.Width - this.ActualWidth) / 2;
+				this.Top = SystemParameters.WorkArea.Top + (SystemParameters.WorkArea.Height - this.ActualHeight) / 2;
+			}
+
+			lastShowTime = DateTime.Now;
+			if (!this.IsVisible)
+				this.Show();
+			this.UpdateLayout();
+			this.Activate();
+			SetForegroundWindow(this.Handle);
+			this.Focus();
+			this.BringIntoView();
+			this.Topmost = !this.Topmost;
+			this.Topmost = !this.Topmost;
+		}
+
+		private void HideThisWindow()
+		{
+			this.Hide();
+		}
+
 		private void PopulatePastinglistAndBatchcommandsFromFile()
 		{
 			currentList.Clear();
@@ -91,102 +240,6 @@ namespace WpfApplication1
 			var handle = new WindowInteropHelper(Application.Current.MainWindow).Handle;
 			if (!Win32Api.RegisterHotKey(handle, Win32Api.Hotkey1, Win32Api.MOD_WIN, (int)'Z'))
 				MessageBox.Show(cThisAppName + " could not register hotkey WinKey + Z");
-		}
-
-		private void Window_Loaded(object sender, RoutedEventArgs e)
-		{
-			//mainGrid.Width = 150;//SystemParameters.WorkArea.Width;
-			//mainGrid.Height = 200;//SystemParameters.WorkArea.Height;
-			this.UpdateLayout();
-			this.Left = SystemParameters.WorkArea.Right - this.ActualWidth;
-			this.Top = SystemParameters.WorkArea.Bottom - this.ActualHeight;
-			//ApplyScale(miniScale);
-			//mainGrid.RenderTransformOrigin = new Point(1, 1);
-
-			this.HideThisWindow();
-			//Timer timer = new Timer(500) { Enabled = true, AutoReset = true };
-			//timer.Elapsed += (sn, ev) =>
-			//{
-			//    this.Dispatcher.BeginInvoke((Action)delegate { ShowThisWindow(); });
-			//};
-			//timer.Start();
-			this.FocusVisualStyle = null;
-
-			var hook = new UserActivityHook(true, true);
-			hook.KeyDown += (sn, ev) =>
-			{
-				//if (ev.KeyCode != System.Windows.Forms.Keys.Z
-				//    && ev.KeyCode != System.Windows.Forms.Keys.LWin
-				//    && ev.KeyCode != System.Windows.Forms.Keys.RWin)
-				lastInputKeyboardNotMouse = true;
-			};
-			hook.OnMouseActivity += (sn, ev) =>
-			{
-				lastInputKeyboardNotMouse = false;
-				//if (ev.Button != null && ev.Button.Button == System.Windows.Forms.MouseButtons.Middle && ev.Button.ButtonState == UserActivityHook.MoreMouseButton.MoreButtonStates.Up)
-				//// && ev.Button.ButtonState == UserActivityHook.MoreMouseButton.MoreButtonStates.DoubleClicked)
-				//{
-				//    skipCheckActiveTimerCount = 2;
-				//    ShowThisWindow();
-				//}
-				if (ev.Button != null && ev.Button.Button == System.Windows.Forms.MouseButtons.Left)
-				{
-					if (ev.Button.ButtonState == UserActivityHook.MoreMouseButton.MoreButtonStates.Down)
-						isMouseLeftDown = true;
-					else
-						isMouseLeftDown = false;
-				}
-				if (isMouseLeftDown && ev.Button.Button == System.Windows.Forms.MouseButtons.Middle && ev.Button.ButtonState == UserActivityHook.MoreMouseButton.MoreButtonStates.Up)
-				{
-					//skipCheckActiveTimerCount = 2;
-					System.Threading.Thread.Sleep(200);
-					ShowThisWindow();
-				}
-			};
-
-			if (!File.Exists(PastingListFilepath))
-			{
-				currentList.Add(new MyMenuItem("Click to define pasting items", "Click to define pasting items", delegate
-				{
-					File.WriteAllText(PastingListFilepath,
-						"Place items here to populate in the 'pasting-list', examples:"
-						+ Environment.NewLine + "Display text|The text to be pasted (note the pipe character)"
-						+ Environment.NewLine + "This text will be displayed & pasted (note there is no pipe character)");
-					Process.Start("notepad", PastingListFilepath).WaitForExit();
-					PopulatePastinglistAndBatchcommandsFromFile();
-				}));
-			}
-			else
-				PopulatePastinglistAndBatchcommandsFromFile();
-			//currentList.Add(new MyMenuItem("Hallo, hover me", "This is the full text for 'Hallo, hover me'"));
-			//currentList.Add(new MyMenuItem("Item2", "Full text for 'Item2'"));
-			//currentList.Add(new MyMenuItem("Item3", "Full text for 'Item3'"));
-			//currentList.Add(new MyMenuItem("Item4", "Full text for 'Item4'"));
-
-			listboxItems.ItemsSource = currentList;
-			if (currentList.Count > 0) SetNewSelectedItem(currentList[0]);
-
-			Timer timerCheckIfForegroundWindow = new Timer(500) { AutoReset = true, Enabled = true };
-			timerCheckIfForegroundWindow.Elapsed += delegate
-			{
-				Dispatcher.Invoke((Action)delegate
-				{
-					if (this.IsVisible)
-					{
-						/*if (skipCheckActiveTimerCount > 0)
-						{
-							this.Activate();
-							skipCheckActiveTimerCount--;
-						}
-						else
-						{*/
-						if (GetForegroundWindow() != this.Handle)
-							HideThisWindow();
-						//}
-					}
-				});
-			};
-			timerCheckIfForegroundWindow.Start();
 		}
 
 		//private int skipCheckActiveTimerCount = 0;
@@ -228,36 +281,6 @@ namespace WpfApplication1
 				}
 			}
 			return IntPtr.Zero;
-		}
-
-		private void ShowThisWindow()
-		{
-			var caretPos = GetPositionToPlaceWindow();
-			//Console.WriteLine("Caret: " + caretPos.ToString());
-			if (caretPos.x > 0 || caretPos.y > 0)
-			{
-				this.Left = caretPos.x;
-				this.Top = caretPos.y;
-			}
-			else
-			{
-				this.Left = SystemParameters.WorkArea.Left + (SystemParameters.WorkArea.Width - this.ActualWidth) / 2;
-				this.Top = SystemParameters.WorkArea.Top + (SystemParameters.WorkArea.Height - this.ActualHeight) / 2;
-			}
-
-			if (!this.IsVisible)
-				this.Show();
-			//this.Activate();
-			SetForegroundWindow(this.Handle);
-			//this.Focus();
-			this.BringIntoView();
-			this.Topmost = !this.Topmost;
-			this.Topmost = !this.Topmost;
-		}
-
-		private void HideThisWindow()
-		{
-			this.Hide();
 		}
 
 		private void mainBorder_MouseEnter(object sender, MouseEventArgs e)
@@ -412,6 +435,12 @@ namespace WpfApplication1
 			var item = border.DataContext as MyMenuItem;
 			if (item == null) return;
 			PerformActionOfItem(item);
+		}
+
+		private void listboxItems_PreviewKeyDown(object sender, KeyEventArgs e)
+		{
+			if (e.Key == Key.Escape)
+				HideThisWindow();
 		}
 	}
 

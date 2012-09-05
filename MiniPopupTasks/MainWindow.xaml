@@ -21,7 +21,8 @@
 					 SelectionChanged='listbox1_SelectionChanged'
 					 Focusable='False'
 					 Background='Transparent'
-					 BorderThickness='0'>
+					 BorderThickness='0'
+					 PreviewKeyDown='listboxItems_PreviewKeyDown'>
 				<ListBox.ItemTemplate>
 					<DataTemplate>
 						<Border CornerRadius='3'
