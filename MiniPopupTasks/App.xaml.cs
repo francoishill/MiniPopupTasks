@@ -22,6 +22,8 @@ namespace WpfApplication1
 		protected override void OnStartup(StartupEventArgs e)
 		{
 			AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
+
+			SharedClasses.AutoUpdating.CheckForUpdates(null, null);
 			//KListener.KeyDown += new RawKeyEventHandler(KListener_KeyDown);
 			base.OnStartup(e);
 		}
@@ -36,7 +38,7 @@ namespace WpfApplication1
 		{
 			Exception exc = e.ExceptionObject as Exception;
 			if (exc == null) return;
-			MessageBox.Show("Unhandled exception: " + exc.Message);
+			MessageBox.Show("Unhandled exception: " + exc.Message + Environment.NewLine + Environment.NewLine + exc.StackTrace);
 		}
 
 		//void KListener_KeyDown(object sender, RawKeyEventArgs args)

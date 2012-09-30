@@ -82,19 +82,25 @@ namespace WpfApplication1
 			};
 			hook.OnMouseActivity += (sn, ev) =>
 			{
-				if (ev.Button.Button == System.Windows.Forms.MouseButtons.Left
-					|| ev.Button.Button == System.Windows.Forms.MouseButtons.Middle
-					|| ev.Button.Button == System.Windows.Forms.MouseButtons.Right)
-					if (!listboxItems.IsMouseOver && DateTime.Now.Subtract(lastShowTime) > minimumShowTimeBeforeHiding)
-						HideThisWindow();
-
-				lastInputKeyboardNotMouse = false;
-				if (ev.Button.Button == System.Windows.Forms.MouseButtons.Middle
-					&& ev.Button.ButtonState == UserActivityHook.MoreMouseButton.MoreButtonStates.DoubleClicked)//&& ev.Clicks == 2)
+				try
 				{
-					System.Threading.Thread.Sleep(200);
-					ShowThisWindow();
+					if (ev.Button.Button == System.Windows.Forms.MouseButtons.Left
+						|| ev.Button.Button == System.Windows.Forms.MouseButtons.Middle
+						|| ev.Button.Button == System.Windows.Forms.MouseButtons.Right)
+						if (!listboxItems.IsMouseOver && DateTime.Now.Subtract(lastShowTime) > minimumShowTimeBeforeHiding)
+							HideThisWindow();
+
+
+					lastInputKeyboardNotMouse = false;
+					if (ev.Button.Button == System.Windows.Forms.MouseButtons.Middle
+						&& ev.Button.ButtonState == UserActivityHook.MoreMouseButton.MoreButtonStates.DoubleClicked)//&& ev.Clicks == 2)
+					{
+						System.Threading.Thread.Sleep(200);
+						ShowThisWindow();
+					}
 				}
+				catch { }//Crashes here on startup for some reason
+
 				//if (ev.Button != null && ev.Button.Button == System.Windows.Forms.MouseButtons.Middle && ev.Button.ButtonState == UserActivityHook.MoreMouseButton.MoreButtonStates.Up)
 				//// && ev.Button.ButtonState == UserActivityHook.MoreMouseButton.MoreButtonStates.DoubleClicked)
 				//{
@@ -227,6 +233,57 @@ namespace WpfApplication1
 					f + Environment.NewLine + File.ReadAllText(f),
 					(item) => { Process.Start(item.Tooltip.Split('\n', '\r')[0]); }));//"explorer", "/select,\"" + item.Tooltip.Split('\n', '\r')[0] + "\""); }));
 			}
+			var appstorun = new List<string>
+			{
+				"CompareCSVs",
+				"GoogleEarth"
+			};
+			foreach (var app in appstorun)
+			{
+				currentList.Add(new MyMenuItem(app, "Run app named " + app,
+					apptorun =>
+					{
+						var appfullpath = RegistryInterop.GetAppPathFromRegistry(apptorun.Name);
+						if (appfullpath != null)
+							Process.Start(appfullpath);
+						else
+							ShowNoCallbackNotificationInterop.ShowNotificationNoCallback_UsingExternalApp(
+								err => UserMessages.ShowErrorMessage(err),
+								"Cannot find exe path from registry App Paths for app '"
+								+ apptorun.Name + "'" + Environment.NewLine + "(" + apptorun.Tooltip + ")",
+								"App not found",
+								ShowNoCallbackNotificationInterop.NotificationTypes.Error,
+								10);
+					}));
+			}
+			var appnamestokillprocess = new List<string> { "Wadiso6" };
+			foreach (var killapp in appnamestokillprocess)
+			{
+				currentList.Add(new MyMenuItem(killapp, "Kill process for '" + killapp + "'",
+					apptokill => KillAppNow(apptokill.Name)));
+			}
+		}
+
+		private void KillAppNow(string appnameNotCaseSensitive)
+		{
+			Process[] processes = Process.GetProcesses();
+			for (int i = 0; i < processes.Length; i++)
+			{
+				try
+				{
+					if (processes[i].ProcessName.Equals(appnameNotCaseSensitive, StringComparison.InvariantCultureIgnoreCase))
+					{
+						processes[i].Kill();
+						return;
+					}
+				}
+				catch { }
+			}
+			ShowNoCallbackNotificationInterop.ShowNotificationNoCallback_UsingExternalApp(err => UserMessages.ShowErrorMessage(err),
+				"Process not found to kill with name '" + appnameNotCaseSensitive + "'",
+				"Process not found",
+				ShowNoCallbackNotificationInterop.NotificationTypes.Warning,
+				2);
 		}
 
 		public IntPtr Handle { get { return new WindowInteropHelper(Application.Current.MainWindow).Handle; } }
