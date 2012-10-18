@@ -53,6 +53,7 @@ namespace WpfApplication1
 			InitializeComponent();
 		}
 
+		private Point lastMiddleClickMousePos = new Point(0, 0);
 		private void Window_Loaded(object sender, RoutedEventArgs e)
 		{
 			//mainGrid.Width = 150;//SystemParameters.WorkArea.Width;
@@ -92,11 +93,20 @@ namespace WpfApplication1
 
 
 					lastInputKeyboardNotMouse = false;
-					if (ev.Button.Button == System.Windows.Forms.MouseButtons.Middle
-						&& ev.Button.ButtonState == UserActivityHook.MoreMouseButton.MoreButtonStates.DoubleClicked)//&& ev.Clicks == 2)
+					if (ev.Button.Button == System.Windows.Forms.MouseButtons.Middle)
 					{
-						System.Threading.Thread.Sleep(200);
-						ShowThisWindow();
+						var currentMousePos = GetMousePosition();
+						if (Point.Subtract(currentMousePos, lastMiddleClickMousePos).Length < 10D)
+						{
+							lastMiddleClickMousePos = currentMousePos;
+							if (ev.Button.ButtonState == UserActivityHook.MoreMouseButton.MoreButtonStates.DoubleClicked)
+							{
+								System.Threading.Thread.Sleep(200);
+								ShowThisWindow();
+							}
+						}
+						else
+							lastMiddleClickMousePos = currentMousePos;
 					}
 				}
 				catch { }//Crashes here on startup for some reason
