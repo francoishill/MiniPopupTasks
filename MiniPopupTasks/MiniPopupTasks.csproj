@@ -115,6 +115,7 @@
     </Compile>
     <Compile Include="..\..\SharedClasses\MiniDownloadBarForm.cs">
       <Link>MiniDownloadBarForm.cs</Link>
+      <SubType>Form</SubType>
     </Compile>
     <Compile Include="..\..\SharedClasses\MiniDownloadBarForm.designer.cs">
       <Link>MiniDownloadBarForm.designer.cs</Link>
