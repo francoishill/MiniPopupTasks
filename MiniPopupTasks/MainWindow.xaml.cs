@@ -81,6 +81,14 @@ namespace WpfApplication1
 				//    && ev.KeyCode != System.Windows.Forms.Keys.RWin)
 				lastInputKeyboardNotMouse = true;
 			};
+			hook.KeyUp += (sn, ev) =>
+			{
+				if (ev.KeyCode == System.Windows.Forms.Keys.Escape)
+				{
+					if (this.Visibility == System.Windows.Visibility.Visible)
+						HideThisWindow();
+				}
+			};
 			hook.OnMouseActivity += (sn, ev) =>
 			{
 				try
