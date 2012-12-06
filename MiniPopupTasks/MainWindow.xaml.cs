@@ -265,7 +265,7 @@ namespace WpfApplication1
 						if (appfullpath != null)
 							Process.Start(appfullpath);
 						else
-							ShowNoCallbackNotificationInterop.ShowNotificationNoCallback_UsingExternalApp(
+							ShowNoCallbackNotificationInterop.Notify(
 								err => UserMessages.ShowErrorMessage(err),
 								"Cannot find exe path from registry App Paths for app '"
 								+ apptorun.Name + "'" + Environment.NewLine + "(" + apptorun.Tooltip + ")",
@@ -297,7 +297,7 @@ namespace WpfApplication1
 				}
 				catch { }
 			}
-			ShowNoCallbackNotificationInterop.ShowNotificationNoCallback_UsingExternalApp(err => UserMessages.ShowErrorMessage(err),
+			ShowNoCallbackNotificationInterop.Notify(err => UserMessages.ShowErrorMessage(err),
 				"Process not found to kill with name '" + appnameNotCaseSensitive + "'",
 				"Process not found",
 				ShowNoCallbackNotificationInterop.NotificationTypes.Warning,
