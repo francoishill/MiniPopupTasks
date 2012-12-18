@@ -23,7 +23,8 @@ namespace WpfApplication1
 		{
 			AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
 
-			SharedClasses.AutoUpdating.CheckForUpdates(null, null);
+			SharedClasses.AutoUpdating.CheckForUpdates_ExceptionHandler();
+			//SharedClasses.AutoUpdating.CheckForUpdates(null, null);
 			//KListener.KeyDown += new RawKeyEventHandler(KListener_KeyDown);
 			base.OnStartup(e);
 		}
