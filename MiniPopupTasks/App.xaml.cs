@@ -10,7 +10,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 
-namespace WpfApplication1
+namespace MiniPopupTasks
 {
 	/// <summary>
 	/// Interaction logic for App.xaml
@@ -21,12 +21,15 @@ namespace WpfApplication1
 
 		protected override void OnStartup(StartupEventArgs e)
 		{
-			AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
+			//AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
 
 			SharedClasses.AutoUpdating.CheckForUpdates_ExceptionHandler();
 			//SharedClasses.AutoUpdating.CheckForUpdates(null, null);
 			//KListener.KeyDown += new RawKeyEventHandler(KListener_KeyDown);
 			base.OnStartup(e);
+
+			MiniPopupTasks.MainWindow mw = new MainWindow();
+			mw.ShowDialog();
 		}
 
 		protected override void OnExit(ExitEventArgs e)

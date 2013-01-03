@@ -20,7 +20,7 @@ using System.IO;
 using System.Diagnostics;
 using SharedClasses;
 
-namespace WpfApplication1
+namespace MiniPopupTasks
 {
 	/// <summary>
 	/// Interaction logic for MainWindow.xaml
@@ -516,6 +516,21 @@ namespace WpfApplication1
 		{
 			if (e.Key == Key.Escape)
 				HideThisWindow();
+		}
+
+		private void menuitemAbout_Click(object sender, RoutedEventArgs e)
+		{
+			AboutWindow2.ShowAboutWindow(new System.Collections.ObjectModel.ObservableCollection<DisplayItem>()
+			{
+				new DisplayItem("Author", "Francois Hill"),
+				new DisplayItem("Icon(s) obtained from", null)
+
+			});
+		}
+
+		private void menuitemExit_Click(object sender, RoutedEventArgs e)
+		{
+			this.Close();
 		}
 	}
 

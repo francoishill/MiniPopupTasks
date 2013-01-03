@@ -1,4 +1,4 @@
-﻿<Window x:Class='WpfApplication1.MainWindow'
+﻿<Window x:Class='MiniPopupTasks.MainWindow'
 		xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
 		xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
 		Title='Mini popup tasks'
@@ -13,6 +13,15 @@
 		Loaded='Window_Loaded'
 		PreviewKeyDown='Window_PreviewKeyDown'>
 	<Grid Name='mainGrid'>
+		<Grid.ContextMenu>
+			<ContextMenu>
+				<MenuItem Header='_About'
+						  Click='menuitemAbout_Click' />
+				<Separator />
+				<MenuItem Header='E_xit'
+						  Click='menuitemExit_Click' />
+			</ContextMenu>
+		</Grid.ContextMenu>
 		<DockPanel LastChildFill='True'>
 			<!--<StatusBar DockPanel.Dock='Bottom'>
 				<StatusBarItem Name='statusbaritem1' Content='Press up/down/enter' />
