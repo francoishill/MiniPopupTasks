@@ -46,10 +46,9 @@ namespace MiniPopupTasks
 		private readonly string BatchCommandsDir = System.IO.Path.GetDirectoryName(SettingsInterop.GetFullFilePathInLocalAppdata("", cThisAppName)).TrimEnd('\\')
 			+ "\\BatchCommands";
 
-		//TODO: Add commands to open/close cdrom?
 		public MainWindow()
 		{
-			int seeTodoAboveThisMethod;
+			//Add commands to open/close cdrom?
 			InitializeComponent();
 		}
 
