@@ -20,7 +20,7 @@
 						  Click='menuitemAbout_Click' />
 				<Separator />
 				<MenuItem Header='E_xit'
-						  Click='menuitemExit_Click' />
+						  Click='menuitemExit_Click'/>
 			</ContextMenu>
 		</Grid.ContextMenu>
 		<DockPanel LastChildFill='True'>

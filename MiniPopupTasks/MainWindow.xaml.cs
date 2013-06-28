@@ -52,9 +52,26 @@ namespace MiniPopupTasks
 			InitializeComponent();
 		}
 
-		private Point lastMiddleClickMousePos = new Point(0, 0);
+		private void TempLog(string message)
+		{
+			tmpwin.textbox1.Text += "[" + DateTime.Now.ToString("HH:mm:ss") + "] " + message + Environment.NewLine;
+			tmpwin.textbox1.ScrollToEnd();
+		}
+
+		bool rightButtonDown = false;
+		int markNextRightButtonUpDoBePrevented = 0;
+		UserActivityHook hook = null;
+		//private Point lastMiddleClickMousePos = new Point(0, 0);
+		TempLogWindow tmpwin;
 		private void Window_Loaded(object sender, RoutedEventArgs e)
 		{
+			tmpwin = new TempLogWindow();
+			tmpwin.Show();
+			var workAreaTempWin = System.Windows.Forms.Screen.AllScreens.Last().WorkingArea;
+			tmpwin.Left = workAreaTempWin.Left + workAreaTempWin.Width / 2 - tmpwin.Width / 2;
+			tmpwin.Top = workAreaTempWin.Top + workAreaTempWin.Height / 2 - tmpwin.Height / 2;
+			tmpwin.WindowState = System.Windows.WindowState.Maximized;
+
 			//mainGrid.Width = 150;//SystemParameters.WorkArea.Width;
 			//mainGrid.Height = 200;//SystemParameters.WorkArea.Height;
 			this.UpdateLayout();
@@ -72,7 +89,7 @@ namespace MiniPopupTasks
 			//timer.Start();
 			this.FocusVisualStyle = null;
 
-			var hook = new UserActivityHook(true, true);
+			hook = new UserActivityHook(true, true);
 			hook.KeyDown += (sn, ev) =>
 			{
 				//if (ev.KeyCode != System.Windows.Forms.Keys.Z
@@ -88,35 +105,90 @@ namespace MiniPopupTasks
 						HideThisWindow();
 				}
 			};
-			hook.OnMouseActivity += (sn, ev) =>
+			hook.OnMouseActivityWithReturnHandledState += (sn, ev) =>
 			{
 				try
 				{
-					if (ev.Button.Button == System.Windows.Forms.MouseButtons.Left
-						|| ev.Button.Button == System.Windows.Forms.MouseButtons.Middle
-						|| ev.Button.Button == System.Windows.Forms.MouseButtons.Right)
-						if (!listboxItems.IsMouseOver && DateTime.Now.Subtract(lastShowTime) > minimumShowTimeBeforeHiding)
-							HideThisWindow();
+					if (ev.Button.Button == System.Windows.Forms.MouseButtons.None)
+						return false;
 
-
-					lastInputKeyboardNotMouse = false;
-					if (ev.Button.Button == System.Windows.Forms.MouseButtons.Middle)
+					try
 					{
-						var currentMousePos = GetMousePosition();
-						if (Point.Subtract(currentMousePos, lastMiddleClickMousePos).Length < 10D)
+						TempLog("rightButtonDown = " + rightButtonDown);
+						TempLog("markNextRightButtonUpDoBePrevented = " + markNextRightButtonUpDoBePrevented);
+
+						if (ev.Button.Button == System.Windows.Forms.MouseButtons.Left
+							|| ev.Button.Button == System.Windows.Forms.MouseButtons.Middle
+							|| ev.Button.Button == System.Windows.Forms.MouseButtons.Right)
 						{
-							lastMiddleClickMousePos = currentMousePos;
-							if (ev.Button.ButtonState == UserActivityHook.MoreMouseButton.MoreButtonStates.DoubleClicked)
+							if (ev.Button.ButtonState == UserActivityHook.MoreMouseButton.MoreButtonStates.Up
+								&& !listboxItems.IsMouseOver
+								&& DateTime.Now.Subtract(lastShowTime) > minimumShowTimeBeforeHiding
+								&& (mainGrid.ContextMenu == null || !mainGrid.ContextMenu.IsOpen)
+								&& this.IsVisible
+								&& (ev.Button.Button == System.Windows.Forms.MouseButtons.Left
+									|| (ev.Button.Button == System.Windows.Forms.MouseButtons.Right && markNextRightButtonUpDoBePrevented == 0)))
 							{
-								System.Threading.Thread.Sleep(200);
-								ShowThisWindow();
+								TempLog("Hiding on miss-clicked and past minimun show time");
+								this.HideThisWindow();
 							}
 						}
-						else
-							lastMiddleClickMousePos = currentMousePos;
+
+						if (ev.Button.Button == System.Windows.Forms.MouseButtons.Right)
+						{
+							if (ev.Button.ButtonState == UserActivityHook.MoreMouseButton.MoreButtonStates.Up)
+							{
+								TempLog("Setting rightButtonDown to false");
+								rightButtonDown = false;
+								if (markNextRightButtonUpDoBePrevented > 0)
+								{
+									TempLog("Handling, decreasing markNextRightButtonUpDoBePrevented");
+									markNextRightButtonUpDoBePrevented--;
+									return true;
+								}
+							}
+							else
+							{
+								TempLog("Setting rightButtonDown to true");
+								rightButtonDown = true;
+							}
+						}
+
+						lastInputKeyboardNotMouse = false;
+						if (rightButtonDown
+							&& ev.Button.Button == System.Windows.Forms.MouseButtons.Left
+							&& ev.Button.ButtonState == UserActivityHook.MoreMouseButton.MoreButtonStates.Up)
+						{
+							MouseSimulator.RightMouseButtonUp();
+							ShowThisWindow();
+							TempLog("Setting markNextRightButtonUpDoBePrevented to 1");
+							markNextRightButtonUpDoBePrevented = 1;// 2;
+						}
+
+						/*if (ev.Button.Button == System.Windows.Forms.MouseButtons.Middle)
+						{
+							var currentMousePos = GetMousePosition();
+							if (Point.Subtract(currentMousePos, lastMiddleClickMousePos).Length < 10D)
+							{
+								lastMiddleClickMousePos = currentMousePos;
+								if (ev.Button.ButtonState == UserActivityHook.MoreMouseButton.MoreButtonStates.DoubleClicked)
+								{
+									System.Threading.Thread.Sleep(200);
+									ShowThisWindow();
+								}
+							}
+							else
+								lastMiddleClickMousePos = currentMousePos;
+						}*/
+					}
+					finally
+					{
+						TempLog("-----");
 					}
 				}
 				catch { }//Crashes here on startup for some reason
+
+				return false;
 
 				//if (ev.Button != null && ev.Button.Button == System.Windows.Forms.MouseButtons.Middle && ev.Button.ButtonState == UserActivityHook.MoreMouseButton.MoreButtonStates.Up)
 				//// && ev.Button.ButtonState == UserActivityHook.MoreMouseButton.MoreButtonStates.DoubleClicked)
@@ -312,8 +384,8 @@ namespace MiniPopupTasks
 			source.AddHook(WndProc);
 
 			var handle = new WindowInteropHelper(Application.Current.MainWindow).Handle;
-			if (!Win32Api.RegisterHotKey(handle, Win32Api.Hotkey1, Win32Api.MOD_WIN, (int)'Z'))
-				MessageBox.Show(cThisAppName + " could not register hotkey WinKey + Z");
+			if (!Win32Api.RegisterHotKey(handle, Win32Api.Hotkey1, Win32Api.MOD_CONTROL + Win32Api.MOD_WIN, (int)'Z'))
+				MessageBox.Show(cThisAppName + " could not register hotkey Ctrl + WinKey + Z");
 		}
 
 		//private int skipCheckActiveTimerCount = 0;
@@ -529,6 +601,7 @@ namespace MiniPopupTasks
 
 		private void menuitemExit_Click(object sender, RoutedEventArgs e)
 		{
+			tmpwin.Close();
 			this.Close();
 		}
 	}
