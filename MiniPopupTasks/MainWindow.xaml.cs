@@ -52,25 +52,25 @@ namespace MiniPopupTasks
 			InitializeComponent();
 		}
 
-		private void TempLog(string message)
-		{
-			tmpwin.textbox1.Text += "[" + DateTime.Now.ToString("HH:mm:ss") + "] " + message + Environment.NewLine;
-			tmpwin.textbox1.ScrollToEnd();
-		}
+		//private void TempLog(string message)
+		//{
+		//	tmpwin.textbox1.Text += "[" + DateTime.Now.ToString("HH:mm:ss") + "] " + message + Environment.NewLine;
+		//	tmpwin.textbox1.ScrollToEnd();
+		//}
 
 		bool rightButtonDown = false;
 		int markNextRightButtonUpDoBePrevented = 0;
 		UserActivityHook hook = null;
 		//private Point lastMiddleClickMousePos = new Point(0, 0);
-		TempLogWindow tmpwin;
+		//TempLogWindow tmpwin;
 		private void Window_Loaded(object sender, RoutedEventArgs e)
 		{
-			tmpwin = new TempLogWindow();
-			tmpwin.Show();
-			var workAreaTempWin = System.Windows.Forms.Screen.AllScreens.Last().WorkingArea;
-			tmpwin.Left = workAreaTempWin.Left + workAreaTempWin.Width / 2 - tmpwin.Width / 2;
-			tmpwin.Top = workAreaTempWin.Top + workAreaTempWin.Height / 2 - tmpwin.Height / 2;
-			tmpwin.WindowState = System.Windows.WindowState.Maximized;
+			//tmpwin = new TempLogWindow();
+			//tmpwin.Show();
+			//var workAreaTempWin = System.Windows.Forms.Screen.AllScreens.Last().WorkingArea;
+			//tmpwin.Left = workAreaTempWin.Left + workAreaTempWin.Width / 2 - tmpwin.Width / 2;
+			//tmpwin.Top = workAreaTempWin.Top + workAreaTempWin.Height / 2 - tmpwin.Height / 2;
+			//tmpwin.WindowState = System.Windows.WindowState.Maximized;
 
 			//mainGrid.Width = 150;//SystemParameters.WorkArea.Width;
 			//mainGrid.Height = 200;//SystemParameters.WorkArea.Height;
@@ -114,8 +114,8 @@ namespace MiniPopupTasks
 
 					try
 					{
-						TempLog("rightButtonDown = " + rightButtonDown);
-						TempLog("markNextRightButtonUpDoBePrevented = " + markNextRightButtonUpDoBePrevented);
+						//TempLog("rightButtonDown = " + rightButtonDown);
+						//TempLog("markNextRightButtonUpDoBePrevented = " + markNextRightButtonUpDoBePrevented);
 
 						if (ev.Button.Button == System.Windows.Forms.MouseButtons.Left
 							|| ev.Button.Button == System.Windows.Forms.MouseButtons.Middle
@@ -129,7 +129,7 @@ namespace MiniPopupTasks
 								&& (ev.Button.Button == System.Windows.Forms.MouseButtons.Left
 									|| (ev.Button.Button == System.Windows.Forms.MouseButtons.Right && markNextRightButtonUpDoBePrevented == 0)))
 							{
-								TempLog("Hiding on miss-clicked and past minimun show time");
+								//TempLog("Hiding on miss-clicked and past minimun show time");
 								this.HideThisWindow();
 							}
 						}
@@ -138,18 +138,18 @@ namespace MiniPopupTasks
 						{
 							if (ev.Button.ButtonState == UserActivityHook.MoreMouseButton.MoreButtonStates.Up)
 							{
-								TempLog("Setting rightButtonDown to false");
+								//TempLog("Setting rightButtonDown to false");
 								rightButtonDown = false;
 								if (markNextRightButtonUpDoBePrevented > 0)
 								{
-									TempLog("Handling, decreasing markNextRightButtonUpDoBePrevented");
+									//TempLog("Handling, decreasing markNextRightButtonUpDoBePrevented");
 									markNextRightButtonUpDoBePrevented--;
 									return true;
 								}
 							}
 							else
 							{
-								TempLog("Setting rightButtonDown to true");
+								//TempLog("Setting rightButtonDown to true");
 								rightButtonDown = true;
 							}
 						}
@@ -161,7 +161,7 @@ namespace MiniPopupTasks
 						{
 							MouseSimulator.RightMouseButtonUp();
 							ShowThisWindow();
-							TempLog("Setting markNextRightButtonUpDoBePrevented to 1");
+							//TempLog("Setting markNextRightButtonUpDoBePrevented to 1");
 							markNextRightButtonUpDoBePrevented = 1;// 2;
 						}
 
@@ -183,7 +183,7 @@ namespace MiniPopupTasks
 					}
 					finally
 					{
-						TempLog("-----");
+						//TempLog("-----");
 					}
 				}
 				catch { }//Crashes here on startup for some reason
@@ -601,7 +601,7 @@ namespace MiniPopupTasks
 
 		private void menuitemExit_Click(object sender, RoutedEventArgs e)
 		{
-			tmpwin.Close();
+			//tmpwin.Close();
 			this.Close();
 		}
 	}
