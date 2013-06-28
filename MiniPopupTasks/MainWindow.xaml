@@ -7,8 +7,7 @@
 		Focusable='True'
 		AllowsTransparency='True'
 		Topmost='True'
-		ShowInTaskbar='False'
-		Background='Transparent'
+		ShowInTaskbar='False'		
 		SizeToContent='WidthAndHeight'
 		UseLayoutRounding='True'
 		Loaded='Window_Loaded'
@@ -40,10 +39,13 @@
 								BorderThickness='1'
 								ToolTip='{Binding Tooltip}'
 								Background='{Binding DrawBrush}'
+								Width='auto'
 								MouseLeftButtonUp='itemBorder_MouseLeftButtonUp'>
 							<TextBlock MinWidth='100'
+									   MaxWidth='500'
 									   Margin='5'
-									   Text='{Binding Name}' />
+									   Text='{Binding Name}'
+									   TextTrimming='WordEllipsis'/>
 						</Border>
 					</DataTemplate>
 				</ListBox.ItemTemplate>

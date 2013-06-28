@@ -282,7 +282,10 @@ namespace MiniPopupTasks
 
 			lastShowTime = DateTime.Now;
 			if (!this.IsVisible)
+			{
+				//this.ShowInTaskbar = true;
 				this.Show();
+			}
 			this.UpdateLayout();
 			this.Activate();
 			SetForegroundWindow(this.Handle);
@@ -294,6 +297,7 @@ namespace MiniPopupTasks
 
 		private void HideThisWindow()
 		{
+			//this.ShowInTaskbar = false;
 			this.Hide();
 		}
 
@@ -324,12 +328,12 @@ namespace MiniPopupTasks
 			}
 			var appstorun = new List<string>
 			{
-				"CompareCSVs",
-				"GoogleEarth"
+				/*"CompareCSVs",
+				"GoogleEarth"*/
 			};
 			foreach (var app in appstorun)
 			{
-				currentList.Add(new MyMenuItem(app, "Run app named " + app,
+				currentList.Add(new MyMenuItem("Launch: " + app, "Run app named " + app,
 					apptorun =>
 					{
 						var appfullpath = RegistryInterop.GetAppPathFromRegistry(apptorun.Name);
@@ -345,10 +349,13 @@ namespace MiniPopupTasks
 								10);
 					}));
 			}
-			var appnamestokillprocess = new List<string> { "Wadiso6" };
+			var appnamestokillprocess = new List<string>
+			{
+				/*"Wadiso6"*/
+			};
 			foreach (var killapp in appnamestokillprocess)
 			{
-				currentList.Add(new MyMenuItem(killapp, "Kill process for '" + killapp + "'",
+				currentList.Add(new MyMenuItem("Kill: " + killapp, "Kill process for '" + killapp + "'",
 					apptokill => KillAppNow(apptokill.Name)));
 			}
 		}
@@ -645,7 +652,7 @@ namespace MiniPopupTasks
 
 		public MyMenuItem(string Name, string Tooltip, Action<MyMenuItem> Action)
 		{
-			this.Name = Name.Length > 30 ? Name.Substring(0, 30) + "..." : Name;
+			this.Name = Name;//Name.Length > 100 ? Name.Substring(0, 30) + "..." : Name;
 			this.Tooltip = Tooltip;
 			this.Action = Action;
 		}
