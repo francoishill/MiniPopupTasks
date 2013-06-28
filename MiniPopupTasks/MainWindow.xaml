@@ -6,6 +6,7 @@
 		WindowStyle='None'
 		Focusable='True'
 		AllowsTransparency='True'
+		Background='Transparent'
 		Topmost='True'
 		ShowInTaskbar='False'		
 		SizeToContent='WidthAndHeight'
